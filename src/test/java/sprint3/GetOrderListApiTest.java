@@ -17,14 +17,9 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
-import static sprint3.helper.TestConstants.SCOOTER_URL;
-import static sprint3.helper.TestConstants.USERNAME;
+import static sprint3.helper.TestUtils.*;
 
 public class GetOrderListApiTest {
-
-    private static final String CREATE_COURIER_REQUEST = "{\"login\": \"" + USERNAME + "\", \"password\": \"199919\", \"firstName\": \"charlie\"}";
-
-    private static final String LOGIN_COURIER = "{\"login\": \"" + USERNAME + "\", \"password\": \"199919\"}";
 
     private CourierIdWrapper idWrapper;
 
@@ -35,35 +30,34 @@ public class GetOrderListApiTest {
 
     @Test
     public void getOrderListReturnSuccess() {
-        createCourier()
+        CourierRequestTestHelper.createCourierRequest(prepareCreateCourierRequest(USERNAME, PASSWORD, FIRST_NAME))
                 .then()
                 .statusCode(201)
                 .body("ok", equalTo(true));
 
-        CourierRequestTestHelper.loginCourierRequestHelper(LOGIN_COURIER)
+        Response loginCourierResponse = CourierRequestTestHelper.loginCourierRequest(prepareLoginPasswordRequest(USERNAME, PASSWORD));
+
+        loginCourierResponse
                 .then()
                 .statusCode(200)
                 .body("id", notNullValue());
 
-        idWrapper = CourierRequestTestHelper.loginCourierRequestHelper(LOGIN_COURIER).as(CourierIdWrapper.class);
+        idWrapper = loginCourierResponse.as(CourierIdWrapper.class);
 
         OrderRequest orderToCreate = prepareOrder();
-        CourierRequestTestHelper.createNewOrderRequestHelper(orderToCreate)
+        CourierRequestTestHelper.createNewOrderRequest(orderToCreate)
                 .then()
                 .statusCode(201)
                 .body("track", notNullValue());
 
-        CourierRequestTestHelper.getOrderList()
+        Response getOrderListResponse = CourierRequestTestHelper.getOrderListRequest();
+
+        getOrderListResponse
                 .then()
                 .statusCode(200);
 
-        OrdersResponse ordersResponse = CourierRequestTestHelper.getOrderList().as(OrdersResponse.class);
-        List<Order> orders = ordersResponse.getOrders();
+        List<Order> orders = getOrderListResponse.as(OrdersResponse.class).getOrders();
         assertThat(orders).isNotEmpty();
-    }
-
-    private Response createCourier() {
-        return CourierRequestTestHelper.createCourierRequestHelper(CREATE_COURIER_REQUEST);
     }
 
     private OrderRequest prepareOrder() {
@@ -82,7 +76,7 @@ public class GetOrderListApiTest {
 
     @After
     public void cleanUp() {
-        CourierRequestTestHelper.deleteCourierRequestHelper(idWrapper)
+        CourierRequestTestHelper.deleteCourierRequest(idWrapper)
                 .then()
                 .statusCode(200)
                 .body("ok", equalTo(true));

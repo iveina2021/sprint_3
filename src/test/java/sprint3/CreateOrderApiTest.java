@@ -13,10 +13,10 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.hamcrest.Matchers.notNullValue;
-import static sprint3.helper.TestConstants.SCOOTER_URL;
+import static sprint3.helper.TestUtils.SCOOTER_URL;
 
 @RunWith(Parameterized.class)
-public class CreateNewOrderApiTest {
+public class CreateOrderApiTest {
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
@@ -30,7 +30,7 @@ public class CreateNewOrderApiTest {
 
     private final List<String> color;
 
-    public CreateNewOrderApiTest(List<String> color) {
+    public CreateOrderApiTest(List<String> color) {
         this.color = color;
     }
 
@@ -52,10 +52,10 @@ public class CreateNewOrderApiTest {
         order.setComment("come back");
         order.setColor(color);
 
-        CourierRequestTestHelper.createNewOrderRequestHelper(order)
+        CourierRequestTestHelper.createNewOrderRequest(order)
                 .then()
                 .statusCode(201)
                 .body("track", notNullValue());
     }
-    }
+}
 
